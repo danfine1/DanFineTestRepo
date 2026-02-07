@@ -1,17 +1,24 @@
-# This is a sample Python script.
+from fastapi import FastAPI, HTTPException
+from models import Item
+app = FastAPI()
 
-# Press ⌃R to execute it or replace it with your code.
-# Press Double ⇧ to search everywhere for classes, files, tool windows, actions, and settings.
+items: list[Item] = []
 
+@app.get("/")
+def root():
+    return items
 
-def print_hi(name):
-    # Use a breakpoint in the code line below to debug your script.
-    print(f'Hi, {name}')  # Press ⌘F8 to toggle the breakpoint.
+@app.post("/items")
+def create_item(item: Item) -> list[Item]:
+    items.append(item)
+    return items
 
+@app.get("/items/{item_index}")
+def read_item_at_index(item_index: int) -> Item:
+    if item_index < 0 or item_index >= len(items):
+        raise HTTPException(status_code=404, detail="Item index out of range")
+    return items[item_index]
 
-# Press the green button in the gutter to run the script.
-if __name__ == '__main__':
-    print_hi('PyCharm')
-    print_hi('PyCharm')
-
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
+@app.get("/items")
+def get_all_items() -> list[Item]:
+    return items
