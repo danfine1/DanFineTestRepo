@@ -1,0 +1,45 @@
+what_works:
+- Core URL shortening is implemented with FastAPI, Postgres, and SQLAlchemy.
+- POST /links accepts a target_url, returns an existing short URL if it already exists, or generates a deterministic short_code, stores it, and returns the full short URL.
+- GET /{short_code} looks up the short_code, returns the original target_url, records a click event with a timestamp, and increments total_clicks and total_earnings (+0.05 per click) for that link.
+- GET /stats returns a list of per-link statistics (short_code, target_url, total_clicks, total_earnings, and a per-link monthly breakdown of clicks and earnings computed from stored click timestamps).
+
+whats_missing:
+- Automated tests were not added due to time constraints.
+- The monthly breakdown logic has not been thoroughly tested, so I cannot stand behind it.
+- Fraud/abuse validation for GET /{short_code}.
+
+db_justification:
+- Postgres was chosen because it integrates cleanly with FastAPI and SQLAlchemy, is easy to run via Docker, and provides strong relational and aggregation capabilities that can support this system and likely future extensions without needing to change databases.
+
+tradeoffs:
+- I aimed to work vertically (implementing end-to-end slices like link creation, resolution, and stats) and test small features as they were built, but this style made it harder to stay within strict time limits.
+- The design is strongly influenced by the existing stack (FastAPI, Postgres, SQLAlchemy), which simplified integration but also meant following that project structure instead of exploring alternative architectures.
+
+ai_usage:
+- Initial core feature prompt:
+  \"We are implementing a new system that will support short urls in the sense that a user can provide a url and we will generate short urls and store them in our db.
+  POST /links - will accept target URL and return a unique short url. the db will store the target url with it's short url after generating it the first time. if a user attempts to do this for a url that it's short url was already stored in the db, we will simply return the corresponding short url, instead of generating it again.
+
+  GET /short_code - a user sends the get with a path parameter that's the short url and will get back the original url
+
+  GET /stats returns a list of all the generated short unique urls\"
+
+- Stats and earnings extension prompt:
+  \"Ok this part works.
+  Let's implement the next step -
+  GET /stats should now be modified such that it not only returns the list of all generated links, but also -
+  the list must be paginated, and for each link we would also like to include the original URL, total times the link was clicked (this is just calling the GET /short_code), total earnings (each time the GET /short_code is called, we will store in our db that it generated another 0.05$), and a breakdown of links grouped by months (this means that we will store when the link was clicked - called with GET /short_code).
+
+  each link should now be stored in the db with extra data - total clicks, total earnings (each call of GET /short_code will increment another 0.05$ to the total of the specific link correlated to the short_code)
+
+  So for the Get /short_code we will do the following modifications - we will store the time stamp, update the total earnings of the specific link, and update the total clicks
+
+  the time stamp we store will be used for the months breakdown\"
+
+- Pagination adjustment prompt:
+  \"for now let's not implement the pagination\"
+
+- Cleanup of legacy item logic prompt:
+  \"Please remove all logic related to the ItemModel, Item, that was implemented before our new links system\"
+

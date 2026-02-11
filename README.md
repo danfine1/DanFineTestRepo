@@ -47,3 +47,11 @@ docker-compose up --build -d
     - **Username**: `POSTGRES_USER`
     - **Password**: `POSTGRES_PASSWORD`
 
+### Architecture (short overview)
+
+- **API layer**: `src/main.py` defines the FastAPI application, request/response models wiring, and the three core endpoints: `POST /links`, `GET /{short_code}`, and `GET /stats`.
+- **Domain models**: `src/models.py` contains Pydantic models for link creation, link info, link resolution, and per-link statistics (including monthly breakdown items).
+- **Persistence layer**: `src/db_models.py` defines the SQLAlchemy models `LinkModel` and `LinkClickModel`, which store links, aggregate counters, and individual click events with timestamps.
+- **Database setup**: `src/database.py` configures the SQLAlchemy engine and session factory using `DATABASE_URL` from the environment; `main.py` calls `Base.metadata.create_all` so tables are created when the app starts.
+- **Runtime composition**: Docker (`Dockerfile`, `docker-compose.yml`) runs the FastAPI app alongside Postgres, and the endpoints interact with the DB via SQLAlchemy sessions injected through FastAPI dependencies.
+
