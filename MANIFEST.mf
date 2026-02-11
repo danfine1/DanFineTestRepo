@@ -5,6 +5,7 @@ what_works:
 - GET /stats returns a list of per-link statistics (short_code, target_url, total_clicks, total_earnings, and a per-link monthly breakdown of clicks and earnings computed from stored click timestamps).
 
 whats_missing:
+- By the end I had an issue with the AI running out of tokens and sadly couldn't fix an issue so no end points work.
 - Automated tests were not added due to time constraints.
 - The monthly breakdown logic has not been thoroughly tested, so I cannot stand behind it.
 - Fraud/abuse validation for GET /{short_code}.
